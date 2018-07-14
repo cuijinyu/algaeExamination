@@ -1,6 +1,13 @@
 package com.algaeexamination;
 
 import com.facebook.react.ReactActivity;
+import com.facebook.react.ReactPackage;
+import com.facebook.react.shell.MainReactPackage;
+
+import org.pgsqlite.SQLitePluginPackage;
+
+import java.util.Arrays;
+import java.util.List;
 
 public class MainActivity extends ReactActivity {
 
@@ -12,4 +19,11 @@ public class MainActivity extends ReactActivity {
     protected String getMainComponentName() {
         return "algaeExamination";
     }
+        protected List<ReactPackage> getPackages() {
+          return Arrays.<ReactPackage>asList(
+              new MainReactPackage(),
+              new SQLitePluginPackage()
+          );
+        }
+
 }
