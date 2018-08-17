@@ -17,6 +17,18 @@ import {
     ToastAndroid,
 
 } from 'react-native';
+import  ImagePicker  from 'react-native-image-picker';
+let options = {
+  title: 'Select Avatar',
+  customButtons: [
+    {name: 'fb', title: 'Choose Photo from Facebook'},
+  ],
+  storageOptions: {
+    skipBackup: true,
+    path: 'images'
+  }
+};
+
 const Realm = require('realm');
 
 class CustomButton extends Component {
@@ -59,7 +71,31 @@ export default class About extends Component {
                     <Text style={{fontSize:28,marginLeft:15,marginTop:5}}>About</Text>
                     <Text style={{marginLeft:15,marginRight:15,marginTop:10,marginBottom:20}}>AlgaeExamination:An application for algae scientific information entry</Text>
                 </View>
-                <CustomButton text="internationalization" onPress={() => {}}></CustomButton>
+                <CustomButton text="internationalization" onPress={() => {
+                    ImagePicker.showImagePicker(options, (response) => {
+                        console.log('Response = ', response);
+                      
+                        if (response.didCancel) {
+                          console.log('User cancelled image picker');
+                        }
+                        else if (response.error) {
+                          console.log('ImagePicker Error: ', response.error);
+                        }
+                        else if (response.customButton) {
+                          console.log('User tapped custom button: ', response.customButton);
+                        }
+                        else {
+                          let source = { uri: response.uri };
+                      
+                          // You can also display the image using data:
+                          // let source = { uri: 'data:image/jpeg;base64,' + response.data };
+                      
+                          this.setState({
+                            avatarSource: source
+                          });
+                        }
+                      });
+                }}></CustomButton>
                 <CustomButton text="about us" onPress={() => {}}></CustomButton>
                 <View>
                     <Copyright></Copyright>

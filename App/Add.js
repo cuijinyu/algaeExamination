@@ -3,6 +3,17 @@ import Copyright from './Copyright.js';
 import {TabNavigator} from 'react-navigation';
 import location from './location.js';
 import realm from '../db/realm.js';
+import  ImagePicker  from 'react-native-image-picker';
+let options = {
+  title: 'Select Avatar',
+  customButtons: [
+    {name: 'fb', title: 'Choose Photo from Facebook'},
+  ],
+  storageOptions: {
+    skipBackup: true,
+    path: 'images'
+  }
+};
 import {
     AppRegistry,
     StyleSheet,
@@ -10,6 +21,7 @@ import {
     View,
     Image,
     TouchableHighlight,
+    TouchableOpacity,
     ToastAndroid,
     Button
 } from 'react-native';
@@ -329,6 +341,39 @@ export default class FormComponent extends Component{
         </GiftedForm.ModalWidget>
       
 
+        <GiftedForm.GroupWidget title="take a photo">
+        </GiftedForm.GroupWidget>
+
+         <TouchableOpacity onPress={() => {
+            ImagePicker.showImagePicker(options, (response) => {
+              console.log('Response = ', response);
+
+              if (response.didCancel) {
+                console.log('User cancelled image picker');
+              }
+              else if (response.error) {
+                console.log('ImagePicker Error: ', response.error);
+              }
+              else if (response.customButton) {
+                console.log('User tapped custom button: ', response.customButton);
+              }
+              else {
+                let source = { uri: response.uri };
+
+                // You can also display the image using data:
+                // let source = { uri: 'data:image/jpeg;base64,' + response.data };
+
+                this.setState({
+                  avatarSource: source
+                });
+              }
+            });
+         }}>
+            <Image
+              style={{}}
+              source={require('../asserts/add.png')}
+            />
+        </TouchableOpacity>
 
         <GiftedForm.ErrorsWidget/>
 
