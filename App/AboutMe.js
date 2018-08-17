@@ -6,8 +6,7 @@
 
 import React, {Component} from 'react';
 import {TabNavigator} from 'react-navigation';
-import {FontAwesomeIcon, Icon} from '../node_modules/._react-native-vector-icons@5.0.0@react-native-vector-icons/FontAwesome';
-import { Sae,Fumi,Kohana,Makiko } from '../node_modules/._react-native-textinput-effects@0.4.2@react-native-textinput-effects';
+import Copyright from './Copyright.js';
 import {
     AppRegistry,
     StyleSheet,
@@ -43,7 +42,7 @@ export default class About extends Component {
     }
 
     static navigationOptions = {
-        tabBarLabel: 'AboutMe',
+        tabBarLabel: 'About',
         // Note: By default the icon is only shown on iOS. Search the showIcon option below.
         tabBarIcon: () => (
                  <Image
@@ -56,7 +55,15 @@ export default class About extends Component {
     render() {
         return (
             <View>
-                <Text>我是一个测试</Text>
+                <View>
+                    <Text style={{fontSize:28,marginLeft:15,marginTop:5}}>About</Text>
+                    <Text style={{marginLeft:15,marginRight:15,marginTop:10,marginBottom:20}}>AlgaeExamination:An application for algae scientific information entry</Text>
+                </View>
+                <CustomButton text="internationalization" onPress={() => {}}></CustomButton>
+                <CustomButton text="about us" onPress={() => {}}></CustomButton>
+                <View>
+                    <Copyright></Copyright>
+                </View>
             </View>
         )
     }

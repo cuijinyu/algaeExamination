@@ -1,6 +1,6 @@
 import React, {Component} from 'react';
 import {TabNavigator} from 'react-navigation';
-import {FontAwesomeIcon, Icon} from '../node_modules/._react-native-vector-icons@5.0.0@react-native-vector-icons/FontAwesome';
+import HomeButton from './HomeButton';
 import {
     AppRegistry,
     Text,
@@ -8,11 +8,12 @@ import {
     Button,
     ScrollView,
     StyleSheet,
+    TouchableOpacity,
     Image,
   } from 'react-native';
 export default class HomePage extends React.Component {
     static navigationOptions = {
-      tabBarLabel: 'HomePage',
+      tabBarLabel: 'Home',
       // Note: By default the icon is only shown on iOS. Search the showIcon option below.
       tabBarIcon: () => (
             <Image
@@ -23,6 +24,17 @@ export default class HomePage extends React.Component {
     };
   
     render() {
-      return (<Text>测试</Text>)
+      return (
+        <View>
+          <View style={{height:200}}>
+
+          </View>
+          <View style={{flexDirection:"row"}}>
+            <HomeButton text="测试" img={require("../asserts/homeAnt.png")} onPress={() => {}}></HomeButton>
+            <HomeButton text="测试" img={require("../asserts/homeAnt.png")} onPress={() => {}}></HomeButton>
+            <HomeButton text="测试" img={require("../asserts/homeAnt.png")} onPress={() => {}}></HomeButton>
+          </View>
+        </View>
+      )
     }
   }
