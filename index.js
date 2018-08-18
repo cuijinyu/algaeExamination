@@ -19,9 +19,6 @@ const TabNav = TabNavigator({
   Home: {
     screen: HomePage,
   },
-  Add: {
-    screen: Add,
-  },
   About: {
     screen: About,
   }
@@ -72,6 +69,9 @@ export default algaeExamination = StackNavigator({
       // headerLeft: (<Button onPress={() => navigation.navigate('DrawerToggle')} title={'User'} />),
       // headerRight: (<Button onPress={() => navigation.navigate('Message')} title={'Message'} />),
     })
+  },
+  Add:{
+    screen:Add
   },
   Modal: {
     screen: StackNavigator({

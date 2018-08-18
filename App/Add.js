@@ -27,34 +27,21 @@ import {
 } from 'react-native';
 import { GiftedForm, GiftedFormManager } from 'react-native-gifted-form';
 import moment from 'moment';
+const Styles = StyleSheet.create({
+  avatar: {
+    borderRadius: 75,
+    width: 150,
+    height: 150
+  }
+})
 export default class FormComponent extends Component{
   constructor(props) {
     super(props)
-    this.state = {
-      ecosystems:["Ponds",
-      "Bogs",
-      "Fens",
-      "Swamps",
-      "Lakes",
-      "Headwaters to the mouths of rivers",        
-      "Waterfalls",
-      "“wet walls”",
-      "Springs",
-      "Caves",
-      "Prairie",],
-      local:null
+    this.state={
+      photos : [],
+      avatarSource: null
     }
   }
-  static navigationOptions = {
-    tabBarLabel: 'Add',
-      // Note: By default the icon is only shown on iOS. Search the showIcon option below.
-      tabBarIcon: () => (
-            <Image
-                    source={require('../asserts/plus.png')}
-                    style={{ width: 26, height: 26}}
-                />
-      ),
-  };
 
   componentWillMount() {
     let local;
@@ -360,8 +347,8 @@ export default class FormComponent extends Component{
               else {
                 let source = { uri: response.uri };
 
-                // You can also display the image using data:
-                // let source = { uri: 'data:image/jpeg;base64,' + response.data };
+        // You can also display the image using data:
+        // let source = { uri: 'data:image/jpeg;base64,' + response.data };
 
                 this.setState({
                   avatarSource: source
@@ -374,6 +361,16 @@ export default class FormComponent extends Component{
               source={require('../asserts/add.png')}
             />
         </TouchableOpacity>
+
+        <View>
+        {
+              this.state.avatarSource===null?<Text>please choose some photo</Text>:<Image style={Styles.avatar} source={this.state.avatarSource} />
+              // this.state.photos.map(function(item) {
+              // return (
+              //   <Image source={item}/>
+              // )})
+            }
+        </View>
 
         <GiftedForm.ErrorsWidget/>
 
