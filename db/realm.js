@@ -11,9 +11,10 @@ export default class Realm {
             primaryKey: 'id',
             properties: {
                 id: 'string',
+                state:'string',
                 name:'string',
                 time: 'string',
-                camera: 'string',
+                images: 'string',
                 place: 'string',
                 latitude: 'string',
                 longitude: 'string',
@@ -42,7 +43,8 @@ export default class Realm {
                 ToastAndroid.show('添加数据完成', ToastAndroid.SHORT);
             });
         }catch(error){
-            ToastAndroid.show('添加数据失败', ToastAndroid.SHORT);
+            ToastAndroid.show(`添加数据失败，错误为:${error}`, ToastAndroid.SHORT);
+            console.error(`添加数据失败，错误为:${error}`);
         }
     }
 
@@ -92,6 +94,19 @@ export default class Realm {
                     datas = datas.filtered(str);
                 }
 
+            });
+            return datas;
+        }catch(error){
+            ToastAndroid.show('未找到', ToastAndroid.SHORT);
+            return null;
+        }
+    }
+
+    getAll () {
+        try{
+            let consor = this.consor;
+            consor.write(()=>{
+                datas = consor.objects('Data');
             });
             return datas;
         }catch(error){
