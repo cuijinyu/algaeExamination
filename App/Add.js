@@ -5,10 +5,7 @@ import location from './location.js';
 import realm from '../db/realm.js';
 import  ImagePicker  from 'react-native-image-picker';
 let options = {
-  title: 'Select Avatar',
-  customButtons: [
-    {name: 'fb', title: 'Choose Photo from Facebook'},
-  ],
+  title: 'Select Photos About This Document',
   storageOptions: {
     skipBackup: true,
     path: 'images'
@@ -41,11 +38,24 @@ export default class FormComponent extends Component{
       photos : [],
       avatarSource: null
     }
+    this.uuid.bind(this);
+  }
+  uuid() {
+    let s = [];
+    let hexDigits = "0123456789abcdef";
+    for (let i = 0; i < 36; i++) {
+        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+    }
+    s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
+    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+    s[8] = s[13] = s[18] = s[23] = "-";
+ 
+    let uuid = s.join("");
+    return uuid;
   }
 
   componentWillMount() {
     let local;
-    let realmInstance = new realm();
     (async () => {
       local = await new location().getLocation();
       this.setState({
@@ -158,12 +168,6 @@ export default class FormComponent extends Component{
         </GiftedForm.GroupWidget>
         <GiftedForm.SeparatorWidget />
 
-        {/* <GiftedForm.TextInputWidget
-          name='time' // mandatory
-          title='time'
-          placeholder='Yun nan'
-          clearButtonMode='while-editing'
-        /> */}
         <GiftedForm.TextInputWidget
           name='name' // mandatory
           title='name'
@@ -319,7 +323,7 @@ export default class FormComponent extends Component{
           displayValue='evaluation'
           scrollEnabled={false}
         >
-          <GiftedForm.SelectWidget name='substrate' title='substrate' multiple={false}>
+          <GiftedForm.SelectWidget name='evaluation' title='evaluation' multiple={false}>
               <GiftedForm.OptionWidget  title='Excellent' value='Excellent'/>
               <GiftedForm.OptionWidget  title='Very good' value='Very good'/>
               <GiftedForm.OptionWidget  title='Good' value='Good'/>
@@ -346,12 +350,10 @@ export default class FormComponent extends Component{
               }
               else {
                 let source = { uri: response.uri };
-
-        // You can also display the image using data:
-        // let source = { uri: 'data:image/jpeg;base64,' + response.data };
-
+                let photos = this.state.photos;
+                photos.push(source);
                 this.setState({
-                  avatarSource: source
+                  photos
                 });
               }
             });
@@ -362,13 +364,12 @@ export default class FormComponent extends Component{
             />
         </TouchableOpacity>
 
-        <View>
+        <View style={{display:'flex',flexDirection:'row',flexWrap:'wrap',marginTop:10}}>
         {
-              this.state.avatarSource===null?<Text>please choose some photo</Text>:<Image style={Styles.avatar} source={this.state.avatarSource} />
-              // this.state.photos.map(function(item) {
-              // return (
-              //   <Image source={item}/>
-              // )})
+               this.state.photos.map(function(item) {
+               return (
+                 <Image source={item} style={{width:100,height:100,marginRight:5,marginBottom:5}}/>
+               )})
             }
         </View>
 
@@ -382,23 +383,42 @@ export default class FormComponent extends Component{
             }
           }}
           onSubmit={(isValid, values, validationResults, postSubmit = null, modalNavigator = null) => {
+            let { name, place, latitude, longitude, elevation, temperatrue, ph, conductivity, salinity, nitrogen, phosphorus } = values;
+            let newDocument = {
+              time:`${this.state.local.time}`,
+              id:this.uuid(),
+              state:'false',
+              name,
+              place,
+              latitude:`${latitude}`,
+              longitude:`${longitude}`,
+              elevation:`${elevation}`,
+              temperature:`${temperatrue}`,
+              ph:`${ph}`,
+              conductivity:`${conductivity}`,
+              salinity:`${salinity}`,
+              nitrogen:`${nitrogen}`,
+              phosphorus:`${phosphorus}`,
+              ecosystems:values.ecosystems[0],
+              collections:values.collections[0],
+              substrate:values.substrate[0],
+              evaluation:values.evaluation[0],
+              images: (() => {
+                let resString = "";
+                for (let i = 0;i < this.state.photos.length;i++) {
+                  resString += this.state.photos[i].uri + ';';
+                }
+                return resString;
+              })()
+            }
+            new realm().addData(newDocument);
             postSubmit();
-            realmInstance.addData({
-
-            });
-            GiftedFormManager.reset('algaeForm');
-             /* Implement the request to your server using values variable
-              ** then you can do:
-              ** postSubmit(); // disable the loader
-              ** postSubmit(['An error occurred, please try again']); // disable the loader and display an error message
-              ** postSubmit(['Username already taken', 'Email already taken']); // disable the loader and display an error message
-              ** GiftedFormManager.reset('signupForm'); // clear the states of the form manually. 'signupForm' is the formName used
-              */
+            this.props.navigation.navigate('TabNav');
           }}
         />
 
         <GiftedForm.NoticeWidget
-          title='By signing up, you agree to the Terms of Service and Privacy Policity.'
+          title='You must enten all the input before you create.'
         />
 
         <GiftedForm.HiddenWidget name='tos' value={true} />

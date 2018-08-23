@@ -136,7 +136,7 @@ export default class HomePage extends React.Component {
             }else{
                 return (
                     <TouchableOpacity style={this.getChildrenStyle(key)} key={key} onPress={() => {
-                        console.error()
+                        this.props.navigation.navigate('History');
                     }}>
                         <Image source={iconPaths[key]} style={this.getIconStyle()}/>
                         <Text style={styles.text}>{i}</Text>
