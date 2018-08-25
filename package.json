@@ -9,6 +9,9 @@
   "dependencies": {
     "immutable": "^3.8.2",
     "react": "16.3.1",
+    "react-native-image-picker":"latest",
+    "autoresponsive-react-native":"latest",
+    "react-native-swipeout":"latest",
     "react-native": "0.55.4",
     "react-native-cli": "^2.0.1",
     "react-native-gifted-form": "^0.1.1",
@@ -17,7 +20,10 @@
     "react-native-tab-navigator": "^0.3.4",
     "react-native-textinput-effects": "^0.4.2",
     "react-navigation": "^2.6.2",
-    "realm": "^2.14.2"
+    "underscore":"latest",
+    "realm": "^2.14.2",
+    "react-native-panel":"latest",
+    "react-native-modal-dropdown":"latest"
   },
   "devDependencies": {
     "babel-jest": "23.2.0",

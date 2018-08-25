@@ -4,6 +4,7 @@ import HomePage from './App/HomePage';
 import Add from './App/Add';
 import GiftedFormModal  from './App/GiftedFormModal';
 import History from './App/History';
+import AboutUs from './App/AboutUs';
 import {
   AppRegistry,
   Text,
@@ -92,6 +93,9 @@ export default algaeExamination = StackNavigator({
   },
   History:{
     screen:History,
+  },
+  AboutUs:{
+    screen:AboutUs,
   }
 }, {
   initialRouteName:'TabNav'

@@ -15,7 +15,6 @@ import {
     Image,
     TouchableHighlight,
     ToastAndroid,
-
 } from 'react-native';
 import  ImagePicker  from 'react-native-image-picker';
 let options = {
@@ -96,7 +95,9 @@ export default class About extends Component {
                         }
                       });
                 }}></CustomButton>
-                <CustomButton text="about us" onPress={() => {}}></CustomButton>
+                <CustomButton text="about us" onPress={() => {
+                    this.props.navigation.navigate('AboutUs');
+                }}></CustomButton>
                 <View>
                     <Copyright></Copyright>
                 </View>

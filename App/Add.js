@@ -4,12 +4,13 @@ import {TabNavigator} from 'react-navigation';
 import location from './location.js';
 import realm from '../db/realm.js';
 import  ImagePicker  from 'react-native-image-picker';
+import Panel from 'react-native-panel';
 let options = {
-  title: 'Select Photos About This Document',
-  storageOptions: {
-    skipBackup: true,
-    path: 'images'
-  }
+    title: 'Select Photos About This Document',
+    storageOptions: {
+        skipBackup: true,
+        path: 'images'
+    }
 };
 import {
     AppRegistry,
@@ -23,409 +24,373 @@ import {
     Button
 } from 'react-native';
 import { GiftedForm, GiftedFormManager } from 'react-native-gifted-form';
+import ModalDropdown from 'react-native-modal-dropdown';
 import moment from 'moment';
 const Styles = StyleSheet.create({
-  avatar: {
-    borderRadius: 75,
-    width: 150,
-    height: 150
-  }
+    avatar: {
+        borderRadius: 75,
+        width: 150,
+        height: 150
+    },
+    dropdownTextStyle:{
+        fontSize: 14,
+        minWidth:150
+    },
+    textStyle: {
+        height:50,
+        lineHeight:50,
+        fontSize: 15,
+        marginLeft:10,
+        // borderBottomWidth:1,
+        // borderBottomColor:'blue',
+        textAlign:'center',
+    },
+    selectView: {
+        display:'flex',
+        flexDirection:'row',
+        height: 50,
+        lineHeight:50,
+        borderBottomColor: '#acb2b9',
+        borderBottomWidth: 1,
+        alignItems:'center'
+    },
+    buttonStyle : {
+        width:'70%',
+        borderLeftColor:'#acb2b9',
+        borderLeftWidth:1
+    }
 })
+
+
 export default class FormComponent extends Component{
-  constructor(props) {
-    super(props)
-    this.state={
-      photos : [],
-      avatarSource: null
-    }
-    this.uuid.bind(this);
-  }
-  uuid() {
-    let s = [];
-    let hexDigits = "0123456789abcdef";
-    for (let i = 0; i < 36; i++) {
-        s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
-    }
-    s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
-    s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
-    s[8] = s[13] = s[18] = s[23] = "-";
- 
-    let uuid = s.join("");
-    return uuid;
-  }
-
-  componentWillMount() {
-    let local;
-    (async () => {
-      local = await new location().getLocation();
-      this.setState({
-        local
-      })
-    })()
-  }
-
-  render() {
-    return (
-      <GiftedForm
-        formName='algaeForm' // GiftedForm instances that use the same name will also share the same states
-        openModal={
-          (router) => {
-            this.props.navigation.navigate('Modal',
-              { 
-                renderContent: router.renderScene,
-                onClose: router.onClose,
-                getTitle: router.getTitle
-              });
-          }
+    constructor(props) {
+        super(props)
+        this.state={
+            photos : [],
+            avatarSource: null,
+            evaluation:'',
+            substrate:'',
+            collections:'',
+            ecosystems:'',
         }
-        clearOnClose={true} // delete the values of the form when unmounted
-        // defaults={{
-        //   time:this.state.local.time,
-        //   longitude:this.state.local.longitude,
-        //   laititude:this.state.local.laititude
-        // }}
-        // validators={{
-        //   fullName: {
-        //     title: 'Full name',
-        //     validate: [{
-        //       validator: 'isLength',
-        //       arguments: [1, 23],
-        //       message: '{TITLE} must be between {ARGS[0]} and {ARGS[1]} characters'
-        //     }]
-        //   },
-        //   username: {
-        //     title: 'Username',
-        //     validate: [{
-        //       validator: 'isLength',
-        //       arguments: [3, 16],
-        //       message: '{TITLE} must be between {ARGS[0]} and {ARGS[1]} characters'
-        //     },{
-        //       validator: 'matches',
-        //       arguments: /^[a-zA-Z0-9]*$/,
-        //       message: '{TITLE} can contains only alphanumeric characters'
-        //     }]
-        //   },
-        //   password: {
-        //     title: 'Password',
-        //     validate: [{
-        //       validator: 'isLength',
-        //       arguments: [6, 16],
-        //       message: '{TITLE} must be between {ARGS[0]} and {ARGS[1]} characters'
-        //     }]
-        //   },
-        //   emailAddress: {
-        //     title: 'Email address',
-        //     validate: [{
-        //       validator: 'isLength',
-        //       arguments: [6, 255],
-        //     },{
-        //       validator: 'isEmail',
-        //     }]
-        //   },
-        //   bio: {
-        //     title: 'Biography',
-        //     validate: [{
-        //       validator: 'isLength',
-        //       arguments: [0, 512],
-        //       message: '{TITLE} must be between {ARGS[0]} and {ARGS[1]} characters'
-        //     }]
-        //   },
-        //   gender: {
-        //     title: 'Gender',
-        //     validate: [{
-        //       validator: (...args) => {
-        //         if (args[0] === undefined) {
-        //           return false;
-        //         }
-        //         return true;
-        //       },
-        //       message: '{TITLE} is required',
-        //     }]
-        //   },
-        //   birthday: {
-        //     title: 'Birthday',
-        //     validate: [{
-        //       validator: 'isBefore',
-        //       arguments: [moment().utc().subtract(18, 'years').format('YYYY-MM-DD')],
-        //       message: 'You must be at least 18 years old'
-        //     }, {
-        //       validator: 'isAfter',
-        //       arguments: [moment().utc().subtract(100, 'years').format('YYYY-MM-DD')],
-        //       message: '{TITLE} is not valid'
-        //     }]
-        //   },
-        //   country: {
-        //     title: 'Country',
-        //     validate: [{
-        //       validator: 'isLength',
-        //       arguments: [2],
-        //       message: '{TITLE} is required'
-        //     }]
-        //   },
-        // }}
-      >
-        <GiftedForm.GroupWidget title="basic">
-        </GiftedForm.GroupWidget>
-        <GiftedForm.SeparatorWidget />
+        this.uuid.bind(this);
+    }
+    uuid() {
+        let s = [];
+        let hexDigits = "0123456789abcdef";
+        for (let i = 0; i < 36; i++) {
+            s[i] = hexDigits.substr(Math.floor(Math.random() * 0x10), 1);
+        }
+        s[14] = "4";  // bits 12-15 of the time_hi_and_version field to 0010
+        s[19] = hexDigits.substr((s[19] & 0x3) | 0x8, 1);  // bits 6-7 of the clock_seq_hi_and_reserved to 01
+        s[8] = s[13] = s[18] = s[23] = "-";
 
-        <GiftedForm.TextInputWidget
-          name='name' // mandatory
-          title='name'
-          placeholder='a new document'
-          clearButtonMode='while-editing'
-        />
+        let uuid = s.join("");
+        return uuid;
+    }
 
-        <GiftedForm.TextInputWidget
-          name='place' // mandatory
-          title='place'
-          placeholder='Yun nan'
-          clearButtonMode='while-editing'
-        />
+    componentWillMount() {
+        let local;
+        (async () => {
+            local = await new location().getLocation();
+            this.setState({
+                local
+            })
+        })()
+    }
 
-        <GiftedForm.TextInputWidget
-          name='latitude'
-          title='latitude'
-          clearButtonMode='while-editing'
-          onTextInputFocus = {
-            (currentText = '') => {
-              if(!currentText) {
-                currentText = `${this.state.local.latitude}`;
-              }
-              return currentText;
-            }
-          }
-        />
-
-        <GiftedForm.TextInputWidget
-          name='longitude' // mandatory
-          title='longitude'
-          clearButtonMode='while-editing'
-          onTextInputFocus = {
-            (currentText = '') => {
-              if(!currentText) {
-                currentText = `${this.state.local.longitude}`;
-              }
-              return currentText;
-            }
-          }
-        />
-
-        <GiftedForm.TextInputWidget
-          name='elevation' // mandatory
-          title='elevation'
-          clearButtonMode='while-editing'
-          onTextInputFocus = {
-            (currentText = '') => {
-              if(!currentText) {
-                currentText = `${this.state.local.altitude}`;
-              }
-              return currentText;
-            }
-          }
-        />
-
-        <GiftedForm.SeparatorWidget />
-
-        <GiftedForm.GroupWidget title="select">
-        </GiftedForm.GroupWidget>
-       
-        <GiftedForm.ModalWidget
-          title='ecosystems'
-          displayValue='ecosystems'
-        >
-          <GiftedForm.SeparatorWidget />
-
-          <GiftedForm.SelectWidget name='ecosystems' title='ecosystems' multiple={false}>
-            <GiftedForm.OptionWidget  title='Ponds' value='Ponds'/>
-            <GiftedForm.OptionWidget  title='Bogs' value='Bogs'/>
-            <GiftedForm.OptionWidget  title='Fens' value='Fens'/>
-            <GiftedForm.OptionWidget  title='Swamps' value='Swamps'/>
-            <GiftedForm.OptionWidget  title='Lakes' value='Lakes'/>
-            <GiftedForm.OptionWidget  title='“wet walls”' value='“wet walls”'/>
-            <GiftedForm.OptionWidget  title='Springs' value='Springs'/>
-            <GiftedForm.OptionWidget  title='Caves' value='Caves'/>
-            <GiftedForm.OptionWidget  title='Headwaters to the mouths of rivers' value='Headwaters to the mouths of rivers'/>
-            <GiftedForm.OptionWidget  title='Waterfalls' value='Waterfalls'/>
-          </GiftedForm.SelectWidget>
-        </GiftedForm.ModalWidget>
-
-        <GiftedForm.ModalWidget
-          title='collections'
-          displayValue='collections'
-          scrollEnabled={false}
-        >
-          <GiftedForm.SeparatorWidget/>
-          <GiftedForm.SelectWidget name='collections' title='collections' multiple={false}>
-            <GiftedForm.OptionWidget  title='Plankton Tow' value='Plankton Tow'/>
-            <GiftedForm.OptionWidget  title='Epiphytes' value='Epiphytes'/>
-            <GiftedForm.OptionWidget  title='Scrape' value='Scrape'/>
-            <GiftedForm.OptionWidget  title='Baster' value='Baster'/>
-            <GiftedForm.OptionWidget  title='Composite' value='Composite'/>
-          </GiftedForm.SelectWidget>
-        </GiftedForm.ModalWidget>
-
-        <GiftedForm.ModalWidget
-          title='substrate'
-          displayValue='substrate'
-          scrollEnabled={false}
-        >
-          <GiftedForm.SelectWidget name='substrate' title='substrate' multiple={false}>
-              <GiftedForm.OptionWidget  title='Rock' value='Rock'/>
-              <GiftedForm.OptionWidget  title='Wood' value='Wood'/>
-              <GiftedForm.OptionWidget  title='Moss' value='Moss'/>
-              <GiftedForm.OptionWidget  title='Benthos' value='Benthos'/>
-          </GiftedForm.SelectWidget>
-        </GiftedForm.ModalWidget>
-
-        <GiftedForm.GroupWidget title="gauge">
-        </GiftedForm.GroupWidget>
-
-        <GiftedForm.SeparatorWidget />
-
-        <GiftedForm.TextInputWidget
-          name='temperature' // mandatory
-          title='temperature'
-          clearButtonMode='while-editing'
-        />
-        <GiftedForm.TextInputWidget
-          name='ph' // mandatory
-          title='ph'
-          clearButtonMode='while-editing'
-        />
-        <GiftedForm.TextInputWidget
-          name='conductivity' // mandatory
-          title='conductivity'
-          clearButtonMode='while-editing'
-        />
-        <GiftedForm.TextInputWidget
-          name='salinity' // mandatory
-          title='salinity'
-          clearButtonMode='while-editing'
-        />
-        <GiftedForm.TextInputWidget
-          name='nitrogen' // mandatory
-          title='nitrogen'
-          clearButtonMode='while-editing'
-        />
-        <GiftedForm.TextInputWidget
-          name='phosphorus' // mandatory
-          title='phosphorus'
-          clearButtonMode='while-editing'
-        />
-
-        <GiftedForm.GroupWidget title="evaluation">
-        </GiftedForm.GroupWidget>
-
-        <GiftedForm.SeparatorWidget />
-
-         <GiftedForm.ModalWidget
-          title='evaluation'
-          displayValue='evaluation'
-          scrollEnabled={false}
-        >
-          <GiftedForm.SelectWidget name='evaluation' title='evaluation' multiple={false}>
-              <GiftedForm.OptionWidget  title='Excellent' value='Excellent'/>
-              <GiftedForm.OptionWidget  title='Very good' value='Very good'/>
-              <GiftedForm.OptionWidget  title='Good' value='Good'/>
-              <GiftedForm.OptionWidget  title='Undetermined/Requires Additional Review' value='Undetermined/Requires Additional Review'/>
-          </GiftedForm.SelectWidget>
-        </GiftedForm.ModalWidget>
-      
-
-        <GiftedForm.GroupWidget title="take a photo">
-        </GiftedForm.GroupWidget>
-
-         <TouchableOpacity onPress={() => {
-            ImagePicker.showImagePicker(options, (response) => {
-              console.log('Response = ', response);
-
-              if (response.didCancel) {
-                console.log('User cancelled image picker');
-              }
-              else if (response.error) {
-                console.log('ImagePicker Error: ', response.error);
-              }
-              else if (response.customButton) {
-                console.log('User tapped custom button: ', response.customButton);
-              }
-              else {
-                let source = { uri: response.uri };
-                let photos = this.state.photos;
-                photos.push(source);
-                this.setState({
-                  photos
-                });
-              }
-            });
-         }}>
-            <Image
-              style={{}}
-              source={require('../asserts/add.png')}
-            />
-        </TouchableOpacity>
-
-        <View style={{display:'flex',flexDirection:'row',flexWrap:'wrap',marginTop:10}}>
-        {
-               this.state.photos.map(function(item) {
-               return (
-                 <Image source={item} style={{width:100,height:100,marginRight:5,marginBottom:5}}/>
-               )})
-            }
-        </View>
-
-        <GiftedForm.ErrorsWidget/>
-
-        <GiftedForm.SubmitWidget
-          title='CREATE'
-          widgetStyles={{
-            submitButton: {
-              backgroundColor: 'blue',
-            }
-          }}
-          onSubmit={(isValid, values, validationResults, postSubmit = null, modalNavigator = null) => {
-            let { name, place, latitude, longitude, elevation, temperatrue, ph, conductivity, salinity, nitrogen, phosphorus } = values;
-            let newDocument = {
-              time:`${this.state.local.time}`,
-              id:this.uuid(),
-              state:'false',
-              name,
-              place,
-              latitude:`${latitude}`,
-              longitude:`${longitude}`,
-              elevation:`${elevation}`,
-              temperature:`${temperatrue}`,
-              ph:`${ph}`,
-              conductivity:`${conductivity}`,
-              salinity:`${salinity}`,
-              nitrogen:`${nitrogen}`,
-              phosphorus:`${phosphorus}`,
-              ecosystems:values.ecosystems[0],
-              collections:values.collections[0],
-              substrate:values.substrate[0],
-              evaluation:values.evaluation[0],
-              images: (() => {
-                let resString = "";
-                for (let i = 0;i < this.state.photos.length;i++) {
-                  resString += this.state.photos[i].uri + ';';
+    render() {
+        let ecosystems = ['Ponds', 'Bogs', 'Fens', 'Swamps', 'Lakes', 'wet wall',
+            'Springs', 'Caves', 'Headwaters to the mouths of rivers', 'Waterfalls'];
+        let collections = ['Plankton Tow', 'Epiphytes', 'Scrape', 'Baster', 'Composite'];
+        let substrate = ['Rock', 'Wood', 'Moss', 'Benthos'];
+        let evaluation = ['Excellent', 'Very good', 'Good', 'Undetermined/Requires Additional Review'];
+        return (
+            <GiftedForm
+                formName='algaeForm' // GiftedForm instances that use the same name will also share the same states
+                openModal={
+                    (router) => {
+                        this.props.navigation.navigate('Modal',
+                            {
+                                renderContent: router.renderScene,
+                                onClose: router.onClose,
+                                getTitle: router.getTitle
+                            });
+                    }
                 }
-                return resString;
-              })()
-            }
-            new realm().addData(newDocument);
-            postSubmit();
-            this.props.navigation.navigate('TabNav');
-          }}
-        />
+                clearOnClose={true}
+            >
 
-        <GiftedForm.NoticeWidget
-          title='You must enten all the input before you create.'
-        />
 
-        <GiftedForm.HiddenWidget name='tos' value={true} />
-        <View style={{marginTop:20, marginBottom:20}}>
-          <Copyright></Copyright>
-        </View>
-      </GiftedForm>
-    );
-  }
+
+              {/*//basic*/}
+                <Panel header="basic">
+
+                <GiftedForm.TextInputWidget
+                    name='name' // mandatory
+                    title='name'
+                    placeholder='a new document'
+                    clearButtonMode='while-editing'
+                />
+
+                <GiftedForm.TextInputWidget
+                    name='place' // mandatory
+                    title='place'
+                    placeholder='Yun nan'
+                    clearButtonMode='while-editing'
+                />
+
+                <GiftedForm.TextInputWidget
+                    name='latitude'
+                    title='latitude'
+                    clearButtonMode='while-editing'
+                    onTextInputFocus = {
+                        (currentText = '') => {
+                            if(!currentText) {
+                                currentText = `${this.state.local.latitude}`;
+                            }
+                            return currentText;
+                        }
+                    }
+                />
+
+                <GiftedForm.TextInputWidget
+                    name='longitude' // mandatory
+                    title='longitude'
+                    clearButtonMode='while-editing'
+                    onTextInputFocus = {
+                        (currentText = '') => {
+                            if(!currentText) {
+                                currentText = `${this.state.local.longitude}`;
+                            }
+                            return currentText;
+                        }
+                    }
+                />
+
+                <GiftedForm.TextInputWidget
+                    name='elevation' // mandatory
+                    title='elevation'
+                    clearButtonMode='while-editing'
+                    onTextInputFocus = {
+                        (currentText = '') => {
+                            if(!currentText) {
+                                currentText = `${this.state.local.altitude}`;
+                            }
+                            return currentText;
+                        }
+                    }
+                />
+                </Panel>
+                <Panel header="select">
+                <View style={Styles.selectView}>
+                    <Text style={{width:'30%', textAlign:'center', color:'black'}}>Ecosystems</Text>
+                    <ModalDropdown options={ecosystems} 
+                                   textStyle={Styles.textStyle} 
+                                   dropdownTextStyle={Styles.dropdownTextStyle} 
+                                   style={Styles.buttonStyle}
+                                   onSelect={(idx, value) => this.setState({
+                                     ecosystems:value
+                                   })}/>
+                </View>
+                <View style={Styles.selectView}>
+                    <Text style={{width:'30%', textAlign:'center', color:'black'}}>Collection</Text>
+                    <ModalDropdown options={collections} 
+                                   textStyle={Styles.textStyle} 
+                                   dropdownTextStyle={Styles.dropdownTextStyle} 
+                                   style={Styles.buttonStyle}
+                                   onSelect ={(idx, value) => this.setState({
+                                      collections:value
+                                   })}/>
+                </View>
+                <View style={Styles.selectView}>
+                    <Text style={{width:'30%', textAlign:'center', color:'black'}}>Substrate</Text>
+                    <ModalDropdown options={substrate} 
+                                   textStyle={Styles.textStyle} 
+                                   dropdownTextStyle={Styles.dropdownTextStyle} 
+                                   style={Styles.buttonStyle}
+                                   onSelect ={(idx, value) => this.setState({
+                                    substrate:value
+                                  })}/>
+                </View>
+                </Panel>
+                <Panel header="gauge">
+
+                <GiftedForm.TextInputWidget
+                    name='temperature' // mandatory
+                    title='temperature'
+                    clearButtonMode='while-editing'
+                />
+                <GiftedForm.TextInputWidget
+                    name='ph' // mandatory
+                    title='ph'
+                    clearButtonMode='while-editing'
+                />
+                <GiftedForm.TextInputWidget
+                    name='conductivity' // mandatory
+                    title='conductivity'
+                    clearButtonMode='while-editing'
+                />
+                <GiftedForm.TextInputWidget
+                    name='salinity' // mandatory
+                    title='salinity'
+                    clearButtonMode='while-editing'
+                />
+                <GiftedForm.TextInputWidget
+                    name='nitrogen' // mandatory
+                    title='nitrogen'
+                    clearButtonMode='while-editing'
+                />
+                <GiftedForm.TextInputWidget
+                    name='phosphorus' // mandatory
+                    title='phosphorus'
+                    clearButtonMode='while-editing'
+                />
+                </Panel>
+
+                <Panel header="evaluation">
+                    <View style={Styles.selectView}>
+                        <Text style={{width:'30%', textAlign:'center', color:'black'}}>evaluation</Text>
+                        <ModalDropdown options={evaluation} 
+                                       textStyle={Styles.textStyle} 
+                                       dropdownTextStyle={Styles.dropdownTextStyle} 
+                                       style={Styles.buttonStyle}
+                                       onSelect ={(idx, value) => this.setState({
+                                        evaluation:value
+                                      })}/>
+                    </View>
+                </Panel>
+                <GiftedForm.GroupWidget title="take a photo">
+                </GiftedForm.GroupWidget>
+
+                <View style={{display:'flex',flexDirection:'row',flexWrap:'wrap',marginTop:10}}>
+                    {
+                        this.state.photos.map((item) => {
+                            return (
+                                <TouchableOpacity  onLongPress={() => {
+                                    let photos = this.state.photos;
+                                    for (let i = 0; i < photos.length; i++) {
+                                        if (photos[i].uri == item.uri) {
+                                            photos.splice(i, 1);
+                                            this.setState({
+                                                photos
+                                            })
+                                            return;
+                                        }
+                                    }
+                                }}>
+                                    <Image source={item} style={{width:100,height:100,marginRight:5,marginBottom:5}}/>
+                                </TouchableOpacity>
+                            )})
+                    }
+                    <TouchableOpacity onPress={() => {
+                        ImagePicker.showImagePicker(options, (response) => {
+                            console.log('Response = ', response);
+
+                            if (response.didCancel) {
+                                console.log('User cancelled image picker');
+                            }
+                            else if (response.error) {
+                                console.log('ImagePicker Error: ', response.error);
+                            }
+                            else if (response.customButton) {
+                                console.log('User tapped custom button: ', response.customButton);
+                            }
+                            else {
+                                let source = { uri: response.uri };
+                                let photos = this.state.photos;
+                                let flag = true;
+                                for (let i = 0;i < photos.length;i ++) {
+                                    if (photos[i].uri === source.uri) {
+                                        flag = !flag;
+                                        break;
+                                    }
+                                }
+                                if (flag) {
+                                    photos.push(source);
+                                    this.setState({
+                                        photos
+                                    });
+                                }
+                            }
+                        });
+                    }}>
+                        <Image
+                            style={{width:100, height:100}}
+                            source={require('../asserts/add.png')}
+                        />
+                    </TouchableOpacity>
+                </View>
+
+                <GiftedForm.ErrorsWidget/>
+
+                <GiftedForm.SubmitWidget
+                    title='CREATE'
+                    widgetStyles={{
+                        submitButton: {
+                            backgroundColor: 'blue',
+                        }
+                    }}
+                    onSubmit={(isValid, values, validationResults, postSubmit = null, modalNavigator = null) => {
+                        let { name, place, latitude,elevation, longitude, temperatrue, ph, conductivity, salinity, nitrogen, phosphorus } = values;
+                        if ( name === '' ||
+                             place === ''||
+                             latitude === ''||
+                             longitude === ''||
+                             temperatrue === ''||
+                             elevation === ''||
+                             ph === ''||
+                             conductivity === ''||
+                             salinity === ''||
+                             nitrogen === ''||
+                             phosphorus === ''||
+                             this.state.ecosystems === ''||
+                             this.state.collections === ''||
+                             this.state.substrate === ''||
+                             this.state.elavation === ''){
+                               console.errror('error');
+                             }
+                            let newDocument = {
+                            time:`${this.state.local.time}`,
+                            id:this.uuid(),
+                            state:'false',
+                            name:`${name}`,
+                            place:`${place}`,
+                            latitude:`${latitude}`,
+                            longitude:`${longitude}`,
+                            elevation:`${elevation}`,
+                            temperature:`${temperatrue}`,
+                            ph:`${ph}`,
+                            conductivity:`${conductivity}`,
+                            salinity:`${salinity}`,
+                            nitrogen:`${nitrogen}`,
+                            phosphorus:`${phosphorus}`,
+                            ecosystems:this.state.ecosystems,
+                            collections:this.state.collections,
+                            substrate:this.state.substrate,
+                            evaluation:this.state.evaluation,
+                            images: (() => {
+                                let resString = "";
+                                for (let i = 0;i < this.state.photos.length;i++) {
+                                    resString += this.state.photos[i].uri + ';';
+                                }
+                                return resString;
+                            })()
+                        }
+                        new realm().addData(newDocument);
+                        postSubmit();
+                        this.props.navigation.navigate('TabNav');
+                    }}
+                />
+                <GiftedForm.NoticeWidget
+                    title='You must enten all the input before you create.'
+                />
+                <GiftedForm.HiddenWidget name='tos' value={true} />
+                <View style={{marginTop:20, marginBottom:20}}>
+                    <Copyright></Copyright>
+                </View>
+            </GiftedForm>
+
+        );
+    }
 };
