@@ -5,6 +5,8 @@ import Add from './App/Add';
 import GiftedFormModal  from './App/GiftedFormModal';
 import History from './App/History';
 import AboutUs from './App/AboutUs';
+import location from './App/location';
+import Modify from './App/Modify';
 import {
   AppRegistry,
   Text,
@@ -13,9 +15,28 @@ import {
   ScrollView,
   StyleSheet,
   Image,
+  AsyncStorage
 } from 'react-native';
 import {TabNavigator, StackNavigator} from 'react-navigation';
 
+new location().getLocation().then(res => {
+    console.warn(res);
+  AsyncStorage.setItem('longitude', `${res.longitude}`, (err, response) => {
+    if (err) {
+      console.error(err);
+    }
+  })
+  AsyncStorage.setItem('latitude', `${res.latitude}`, (err, response) => {
+    if (err) {
+      console.error(err);
+    }
+  })
+  AsyncStorage.setItem('altitude', `${res.altitude}`, (err, response) => {
+    if (err) {
+      console.error(err);
+    }
+  })
+})
 
 const TabNav = TabNavigator({
   Home: {
@@ -96,6 +117,9 @@ export default algaeExamination = StackNavigator({
   },
   AboutUs:{
     screen:AboutUs,
+  },
+  Modify:{
+    screen:Modify
   }
 }, {
   initialRouteName:'TabNav'

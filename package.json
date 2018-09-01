@@ -23,7 +23,8 @@
     "underscore":"latest",
     "realm": "^2.14.2",
     "react-native-panel":"latest",
-    "react-native-modal-dropdown":"latest"
+    "react-native-modal-dropdown":"latest",
+    "tcomb-form-native":"latest"
   },
   "devDependencies": {
     "babel-jest": "23.2.0",
