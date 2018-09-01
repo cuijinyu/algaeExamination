@@ -11,10 +11,12 @@ import {
     StyleSheet,
     TouchableOpacity,
     Image,
-    Dimensions
-  } from 'react-native';
+    Dimensions,
+    ToastAndroid,
+    AsyncStorage
+} from 'react-native';
 
-  let styles = StyleSheet.create({
+let styles = StyleSheet.create({
     container: {
         backgroundColor: '#dddddd',
         paddingRight: 9,
@@ -43,18 +45,18 @@ import {
 
 
 export default class HomePage extends React.Component {
-      
-      static navigationOptions = {
+
+    static navigationOptions = {
         tabBarLabel: 'Home',
         // Note: By default the icon is only shown on iOS. Search the showIcon option below.
         tabBarIcon: () => (
-              <Image
-                      source={require('../asserts/homeAnt.png')}
-                      style={{ width: 26, height: 26}}
-                  />
+            <Image
+                source={require('../asserts/homeAnt.png')}
+                style={{ width: 26, height: 26}}
+            />
         ),
-      };
-      constructor(props) {
+    };
+    constructor(props) {
         super(props);
         this.SCREEN_WIDTH = Dimensions.get('window').width;
         this.state = {
@@ -67,6 +69,33 @@ export default class HomePage extends React.Component {
             ],
             color: ['rgb(112,102,100)', 'rgb(191,102,96)','rgb(213,178,150)', 'rgb(207,175,74)', 'rgb(210,179,135)']
         }
+        AsyncStorage.getItem("altitude", (err, res) => {
+            if (err) {
+                console.error(err);
+            }
+            elevation = res;
+            this.setState({
+                elevation
+            })
+        })
+        AsyncStorage.getItem("longitude", (err, res) => {
+            if (err) {
+                console.error(err);
+            }
+            longtitude = res;
+            this.setState({
+                longtitude
+            })
+        })
+        AsyncStorage.getItem("latitude", (err, res) => {
+            if (err) {
+                console.error(err);
+            }
+            latitude = res;
+            this.setState({
+                latitude
+            })
+        })
     }
 
 
@@ -119,21 +148,23 @@ export default class HomePage extends React.Component {
 
     renderChildren() {
         let iconPaths = this.state.iconPath;
-        let status = false;
         return this.state.array.map((i, key) => {
             // let str = '../asserts/'+key+'.png';
             // let iconPath = require(str);
-            status = !status;
-            if(status) {
+            if(key == 0) {
                 return (
                     <TouchableOpacity style={this.getChildrenStyle(key)} key={key} onPress={() => {
-                        this.props.navigation.navigate('Add');
+                        this.props.navigation.navigate('Add', {
+                            elevation,
+                            longtitude,
+                            latitude
+                        });
                     }}>
                         <Text style={styles.text}>{i}</Text>
                         <Image source={iconPaths[key]} style={this.getIconStyle()}/>
                     </TouchableOpacity>
                 );
-            }else{
+            }else if(key == 1){
                 return (
                     <TouchableOpacity style={this.getChildrenStyle(key)} key={key} onPress={() => {
                         this.props.navigation.navigate('History');
@@ -141,20 +172,29 @@ export default class HomePage extends React.Component {
                         <Image source={iconPaths[key]} style={this.getIconStyle()}/>
                         <Text style={styles.text}>{i}</Text>
                     </TouchableOpacity>
-                    );
-                }
-                }, this);
-                }
-
-                // onPressTitle = () => {
-                //     this.setState({
-                //         array: [...this.state.array, parseInt(Math.random() * 30)],
-                //     });
-                // }
-
-                render() {
+                );
+            }else {
                 return (
-                <ScrollView style={styles.container}>
+                    <TouchableOpacity style={this.getChildrenStyle(key)} key={key} onPress={() => {
+                        ToastAndroid.show('It will appear in the next version.', ToastAndroid.CENTER);
+                    }}>
+                        <Image source={iconPaths[key]} style={this.getIconStyle()}/>
+                        <Text style={styles.text}>{i}</Text>
+                    </TouchableOpacity>
+                )
+            }
+        }, this);
+    }
+
+    // onPressTitle = () => {
+    //     this.setState({
+    //         array: [...this.state.array, parseInt(Math.random() * 30)],
+    //     });
+    // }
+
+    render() {
+        return (
+            <ScrollView style={styles.container}>
                 <Text style={{
                     position:'absolute',
                     top:40,
@@ -179,4 +219,4 @@ export default class HomePage extends React.Component {
             </ScrollView>
         );
     }
-  }
+}

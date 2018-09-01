@@ -64,7 +64,7 @@ export default class History extends Component {
         let datas = new Realm().getAll();
         let newData = [];
         for (let i = 0;i < datas.length;i++) {
-            newData.push(datas[i]);
+            newData.push(Object.assign({}, datas[i]));
         }
         this.getFirstImageArray.bind(this);
         this.state = {
@@ -77,10 +77,7 @@ export default class History extends Component {
         if (imageArray.length === 0) {
             return [];
         } else {
-            if (imageArray.length === 2)
                 return [imageArray.shift()];
-            else 
-                return imageArray.shift();
         }
     }
 
@@ -112,29 +109,25 @@ export default class History extends Component {
     }
 
     jumpToView(viewuuid){
-        let _this = this;
-        const {navigator} = this.props;
-        if(navigator){
-            navigator.push({
-                name: 'nextPagename',
-                component: nextPage,
-
-                params:{
-                    id: viewuuid,
-                }
-            })
-        }
+        this.props.navigation.navigate('Modify',{
+            id:viewuuid,
+        });
     }
 
     Commit(commituuid){
-        // console.error(commituuid);
+        
     }
 
     Delete(deleteuuid){
         let param = {id: deleteuuid};
         new Realm().deleteData(param.id);
+        let searchData = new Realm().getAll();
+        let newData = [];
+        for (let i = 0; i < searchData.length; i++){
+            newData.push(Object.assign({}, searchData[i]));
+        }
         this.setState({
-            state:new Realm().getAll()
+            datas:newData
         })
     }
 
@@ -161,7 +154,7 @@ export default class History extends Component {
                     // console.error(source);
                     return (
                             <Swipeout right={swipeoutBtns} autoClose={true}>
-                                <TouchableOpacity key={key} onPress={this.jumpToView(i.id)}>
+                                <TouchableOpacity key={key} onPress={()=>{this.jumpToView(i.id)}}>
                                     <View style={this.getContinerStyle()}>
                                         <Image style={styles.icon} source={this.getIcon(key)}/>
                                         <View style={this.getTextView()}>

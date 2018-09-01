@@ -70,32 +70,10 @@ export default class About extends Component {
                     <Text style={{fontSize:28,marginLeft:15,marginTop:5}}>About</Text>
                     <Text style={{marginLeft:15,marginRight:15,marginTop:10,marginBottom:20}}>AlgaeExamination:An application for algae scientific information entry</Text>
                 </View>
-                <CustomButton text="internationalization" onPress={() => {
-                    ImagePicker.showImagePicker(options, (response) => {
-                        console.log('Response = ', response);
-                      
-                        if (response.didCancel) {
-                          console.log('User cancelled image picker');
-                        }
-                        else if (response.error) {
-                          console.log('ImagePicker Error: ', response.error);
-                        }
-                        else if (response.customButton) {
-                          console.log('User tapped custom button: ', response.customButton);
-                        }
-                        else {
-                          let source = { uri: response.uri };
-                      
-                          // You can also display the image using data:
-                          // let source = { uri: 'data:image/jpeg;base64,' + response.data };
-                      
-                          this.setState({
-                            avatarSource: source
-                          });
-                        }
-                      });
+                <CustomButton text="Internationalization" onPress={() => {
+                   ToastAndroid.show("internationalization will appear in the next version.", ToastAndroid.LONG)
                 }}></CustomButton>
-                <CustomButton text="about us" onPress={() => {
+                <CustomButton text="About us" onPress={() => {
                     this.props.navigation.navigate('AboutUs');
                 }}></CustomButton>
                 <View>

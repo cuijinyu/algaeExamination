@@ -5,6 +5,23 @@ import location from './location.js';
 import realm from '../db/realm.js';
 import  ImagePicker  from 'react-native-image-picker';
 import Panel from 'react-native-panel';
+import t from 'tcomb-form-native';
+import moment from 'moment';
+import {
+    AppRegistry,
+    StyleSheet,
+    Text,
+    View,
+    Image,
+    ScrollView,
+    TouchableHighlight,
+    TouchableOpacity,
+    ToastAndroid,
+    AsyncStorage,
+    Button,
+} from 'react-native';
+import ModalDropdown from 'react-native-modal-dropdown';
+
 let options = {
     title: 'Select Photos About This Document',
     storageOptions: {
@@ -12,20 +29,8 @@ let options = {
         path: 'images'
     }
 };
-import {
-    AppRegistry,
-    StyleSheet,
-    Text,
-    View,
-    Image,
-    TouchableHighlight,
-    TouchableOpacity,
-    ToastAndroid,
-    Button
-} from 'react-native';
-import { GiftedForm, GiftedFormManager } from 'react-native-gifted-form';
-import ModalDropdown from 'react-native-modal-dropdown';
-import moment from 'moment';
+let Form = t.form.Form;
+
 const Styles = StyleSheet.create({
     avatar: {
         borderRadius: 75,
@@ -41,8 +46,6 @@ const Styles = StyleSheet.create({
         lineHeight:50,
         fontSize: 15,
         marginLeft:10,
-        // borderBottomWidth:1,
-        // borderBottomColor:'blue',
         textAlign:'center',
     },
     selectView: {
@@ -58,13 +61,35 @@ const Styles = StyleSheet.create({
         width:'70%',
         borderLeftColor:'#acb2b9',
         borderLeftWidth:1
-    }
+    },
+    container: {
+        marginTop: 20,
+        paddingLeft: 15,
+        paddingRight: 15,
+    },
+    button: {
+        height: 36,
+        backgroundColor: '#48BBEC',
+        borderColor: '#48BBEC',
+        borderWidth: 1,
+        borderRadius: 8,
+        marginTop: 20,
+        marginLeft: 16,
+        marginRight: 16,
+        alignSelf: 'stretch',
+        justifyContent: 'center'
+    },
+    buttonText: {
+        fontSize: 18,
+        color: 'white',
+        alignSelf: 'center'
+    },
 })
 
 
 export default class FormComponent extends Component{
     constructor(props) {
-        super(props)
+        super(props);
         this.state={
             photos : [],
             avatarSource: null,
@@ -72,9 +97,29 @@ export default class FormComponent extends Component{
             substrate:'',
             collections:'',
             ecosystems:'',
+            time:moment(new Date()).format('YYYY MMMM Do, h:mm:ss a'),
+            lat:'',
+            lng:'',
+            ev:'',
+            basic:{
+                name:"",
+                place:"",
+                latitude:this.props.navigation.state.params.latitude,
+                longtitude:this.props.navigation.state.params.longtitude,
+                elevation:this.props.navigation.state.params.elevation,
+            },
+            gauge:{
+                temperature:"",
+                ph:"",
+                conductivity:"",
+                salinity:"",
+                nitrogen:"",
+                phosphorus:"",
+            }
         }
         this.uuid.bind(this);
     }
+    
     uuid() {
         let s = [];
         let hexDigits = "0123456789abcdef";
@@ -89,99 +134,144 @@ export default class FormComponent extends Component{
         return uuid;
     }
 
-    componentWillMount() {
-        let local;
-        (async () => {
-            local = await new location().getLocation();
+    componentDidMount() {
+        new location().getLocation().then(res => {
             this.setState({
-                local
+                lng:res.longitude,
+                lat:res.latitude,
+                ev:res.altitude,
             })
-        })()
+        })
     }
 
+    test() {
+        console.error('in force');
+    }
+
+    submit(){
+        for (let key in this.state.basic) {
+            if (this.state.basic[key] === '') {
+                ToastAndroid.show(`please input ${key}`, ToastAndroid.SHORT);
+                return;
+            }
+        }
+        for (let key in this.state.guage) {
+            if (this.state.guage[key] === '') {
+                ToastAndroid.show(`please input ${key}`, ToastAndroid.SHORT);
+                return;
+            }
+        }
+        if (this.state.ecosystems === '') {
+            ToastAndroid.show(`please input ecosystems`, ToastAndroid.SHORT);
+            return;
+        }
+        if (this.state.collections === '') {
+            ToastAndroid.show(`please input collections`, ToastAndroid.SHORT);
+            return;
+        }
+        if (this.state.substrate === '') {
+            ToastAndroid.show(`please input substrate`, ToastAndroid.SHORT);
+            return;
+        }
+        if (this.state.evaluation === '') {
+            ToastAndroid.show(`please input elaluation`, ToastAndroid.SHORT);
+            return;
+        }
+        let datas = {
+            time:`${this.state.time}`,
+            id:this.uuid(),
+            state:'false',
+            ecosystems:this.state.ecosystems,
+            collections:this.state.collections,
+            substrate:this.state.substrate,
+            evaluation:this.state.evaluation,
+            images: (() => {
+                let resString = "";
+                for (let i = 0;i < this.state.photos.length;i++) {
+                    resString += this.state.photos[i].uri + ';';
+                }
+                return resString;
+            })(),
+            longitude:`${this.state.basic.longtitude}`,
+            latitude:`${this.state.basic.latitude}`,
+            place:`${this.state.basic.place}`,
+            elevation:`${this.state.basic.elevation}`,
+            name:`${this.state.basic.name}`,
+            ph:`${this.state.gauge.ph}`,
+            temperature:`${this.state.gauge.temperature}`,
+            conductivity:`${this.state.gauge.conductivity}`,
+            salinity:`${this.state.gauge.salinity}`,
+            nitrogen:`${this.state.gauge.nitrogen}`,
+            phosphorus:`${this.state.gauge.phosphorus}`
+        };
+        new realm().addData(datas);
+        this.props.navigation.navigate('TabNav');
+    }
+
+    getbasicOptions(){
+        let data = this.state.value;
+        return (
+            {
+                fields:{
+                    name:{
+                        help: 'Your help message here',
+                        value: 'name',
+                        onFocus: ()=>{this.test()},
+                    }
+                }
+            }
+        )
+    }
+    
     render() {
+        let basic = t.struct({
+            name:t.String,
+            place:t.String,
+            latitude:t.String,
+            longtitude:t.String,
+            elevation:t.String,
+        });
+
+        let gaugeOptions = {
+            fields:{
+                ph:{
+                    help: 'Your help message here',
+                }
+            }
+        }
+
+        let gauge = t.struct({
+            temperature:t.String,
+            ph:t.String,
+            conductivity:t.String,
+            salinity:t.String,
+            nitrogen:t.String,
+            phosphorus:t.String,
+        });
+
         let ecosystems = ['Ponds', 'Bogs', 'Fens', 'Swamps', 'Lakes', 'wet wall',
             'Springs', 'Caves', 'Headwaters to the mouths of rivers', 'Waterfalls'];
         let collections = ['Plankton Tow', 'Epiphytes', 'Scrape', 'Baster', 'Composite'];
         let substrate = ['Rock', 'Wood', 'Moss', 'Benthos'];
         let evaluation = ['Excellent', 'Very good', 'Good', 'Undetermined/Requires Additional Review'];
         return (
-            <GiftedForm
-                formName='algaeForm' // GiftedForm instances that use the same name will also share the same states
-                openModal={
-                    (router) => {
-                        this.props.navigation.navigate('Modal',
-                            {
-                                renderContent: router.renderScene,
-                                onClose: router.onClose,
-                                getTitle: router.getTitle
-                            });
-                    }
-                }
-                clearOnClose={true}
-            >
-
-
-
-              {/*//basic*/}
+            <ScrollView>
+                  {/*//basic*/}
                 <Panel header="basic">
-
-                <GiftedForm.TextInputWidget
-                    name='name' // mandatory
-                    title='name'
-                    placeholder='a new document'
-                    clearButtonMode='while-editing'
-                />
-
-                <GiftedForm.TextInputWidget
-                    name='place' // mandatory
-                    title='place'
-                    placeholder='Yun nan'
-                    clearButtonMode='while-editing'
-                />
-
-                <GiftedForm.TextInputWidget
-                    name='latitude'
-                    title='latitude'
-                    clearButtonMode='while-editing'
-                    onTextInputFocus = {
-                        (currentText = '') => {
-                            if(!currentText) {
-                                currentText = `${this.state.local.latitude}`;
-                            }
-                            return currentText;
-                        }
-                    }
-                />
-
-                <GiftedForm.TextInputWidget
-                    name='longitude' // mandatory
-                    title='longitude'
-                    clearButtonMode='while-editing'
-                    onTextInputFocus = {
-                        (currentText = '') => {
-                            if(!currentText) {
-                                currentText = `${this.state.local.longitude}`;
-                            }
-                            return currentText;
-                        }
-                    }
-                />
-
-                <GiftedForm.TextInputWidget
-                    name='elevation' // mandatory
-                    title='elevation'
-                    clearButtonMode='while-editing'
-                    onTextInputFocus = {
-                        (currentText = '') => {
-                            if(!currentText) {
-                                currentText = `${this.state.local.altitude}`;
-                            }
-                            return currentText;
-                        }
-                    }
-                />
+                    <View style={Styles.container}>
+                    <Form
+                        ref="basic"
+                        type={basic}
+                        value={this.state.basic}
+                        onChange={(value) => {
+                            this.setState({
+                                basic:value
+                            })
+                        }}
+                    />
+                    </View>
                 </Panel>
+                  {/*select*/}
                 <Panel header="select">
                 <View style={Styles.selectView}>
                     <Text style={{width:'30%', textAlign:'center', color:'black'}}>Ecosystems</Text>
@@ -214,39 +304,25 @@ export default class FormComponent extends Component{
                                   })}/>
                 </View>
                 </Panel>
-                <Panel header="gauge">
 
-                <GiftedForm.TextInputWidget
-                    name='temperature' // mandatory
-                    title='temperature'
-                    clearButtonMode='while-editing'
-                />
-                <GiftedForm.TextInputWidget
-                    name='ph' // mandatory
-                    title='ph'
-                    clearButtonMode='while-editing'
-                />
-                <GiftedForm.TextInputWidget
-                    name='conductivity' // mandatory
-                    title='conductivity'
-                    clearButtonMode='while-editing'
-                />
-                <GiftedForm.TextInputWidget
-                    name='salinity' // mandatory
-                    title='salinity'
-                    clearButtonMode='while-editing'
-                />
-                <GiftedForm.TextInputWidget
-                    name='nitrogen' // mandatory
-                    title='nitrogen'
-                    clearButtonMode='while-editing'
-                />
-                <GiftedForm.TextInputWidget
-                    name='phosphorus' // mandatory
-                    title='phosphorus'
-                    clearButtonMode='while-editing'
-                />
+                  {/*gauge*/}
+                <Panel header="gauge">
+                    <View style={Styles.container}>
+                    <Form
+                        ref="gauge" 
+                        type={gauge}
+                        value={this.state.gauge}
+                        onChange={value => {
+                            this.setState({
+                                gauge:value
+                            })
+                        }}
+                    />
+                    </View>
+
                 </Panel>
+
+
 
                 <Panel header="evaluation">
                     <View style={Styles.selectView}>
@@ -260,8 +336,6 @@ export default class FormComponent extends Component{
                                       })}/>
                     </View>
                 </Panel>
-                <GiftedForm.GroupWidget title="take a photo">
-                </GiftedForm.GroupWidget>
 
                 <View style={{display:'flex',flexDirection:'row',flexWrap:'wrap',marginTop:10}}>
                     {
@@ -322,74 +396,15 @@ export default class FormComponent extends Component{
                     </TouchableOpacity>
                 </View>
 
-                <GiftedForm.ErrorsWidget/>
 
-                <GiftedForm.SubmitWidget
-                    title='CREATE'
-                    widgetStyles={{
-                        submitButton: {
-                            backgroundColor: 'blue',
-                        }
-                    }}
-                    onSubmit={(isValid, values, validationResults, postSubmit = null, modalNavigator = null) => {
-                        let { name, place, latitude,elevation, longitude, temperatrue, ph, conductivity, salinity, nitrogen, phosphorus } = values;
-                        if ( name === '' ||
-                             place === ''||
-                             latitude === ''||
-                             longitude === ''||
-                             temperatrue === ''||
-                             elevation === ''||
-                             ph === ''||
-                             conductivity === ''||
-                             salinity === ''||
-                             nitrogen === ''||
-                             phosphorus === ''||
-                             this.state.ecosystems === ''||
-                             this.state.collections === ''||
-                             this.state.substrate === ''||
-                             this.state.elavation === ''){
-                               console.errror('error');
-                             }
-                            let newDocument = {
-                            time:`${this.state.local.time}`,
-                            id:this.uuid(),
-                            state:'false',
-                            name:`${name}`,
-                            place:`${place}`,
-                            latitude:`${latitude}`,
-                            longitude:`${longitude}`,
-                            elevation:`${elevation}`,
-                            temperature:`${temperatrue}`,
-                            ph:`${ph}`,
-                            conductivity:`${conductivity}`,
-                            salinity:`${salinity}`,
-                            nitrogen:`${nitrogen}`,
-                            phosphorus:`${phosphorus}`,
-                            ecosystems:this.state.ecosystems,
-                            collections:this.state.collections,
-                            substrate:this.state.substrate,
-                            evaluation:this.state.evaluation,
-                            images: (() => {
-                                let resString = "";
-                                for (let i = 0;i < this.state.photos.length;i++) {
-                                    resString += this.state.photos[i].uri + ';';
-                                }
-                                return resString;
-                            })()
-                        }
-                        new realm().addData(newDocument);
-                        postSubmit();
-                        this.props.navigation.navigate('TabNav');
-                    }}
-                />
-                <GiftedForm.NoticeWidget
-                    title='You must enten all the input before you create.'
-                />
-                <GiftedForm.HiddenWidget name='tos' value={true} />
+                <TouchableHighlight onPress={()=>{this.submit();}} underlayColor='#99d9f4' style={Styles.button}>
+                    <Text style={Styles.buttonText}>Save</Text>
+                </TouchableHighlight>
+
                 <View style={{marginTop:20, marginBottom:20}}>
                     <Copyright></Copyright>
                 </View>
-            </GiftedForm>
+            </ScrollView>
 
         );
     }
